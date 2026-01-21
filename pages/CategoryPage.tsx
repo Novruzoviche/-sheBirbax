@@ -13,8 +13,8 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, title }) => {
   const [docs, setDocs] = useState<DocumentItem[]>([]);
 
   useEffect(() => {
-    const allDocs = storageService.getDocuments();
-    setDocs(allDocs.filter(d => d.category === category));
+    const visibleDocs = storageService.getVisibleDocuments();
+    setDocs(visibleDocs.filter(d => d.category === category));
   }, [category]);
 
   return (

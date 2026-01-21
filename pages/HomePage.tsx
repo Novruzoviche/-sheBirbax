@@ -9,7 +9,7 @@ const HomePage: React.FC = () => {
   const [docs, setDocs] = useState<DocumentItem[]>([]);
 
   useEffect(() => {
-    setDocs(storageService.getDocuments());
+    setDocs(storageService.getVisibleDocuments());
   }, []);
 
   return (

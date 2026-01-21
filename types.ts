@@ -4,12 +4,19 @@ export enum Category {
   CERTIFICATE = 'Sertifikat'
 }
 
+export enum ItemStatus {
+  VISIBLE = 'visible',
+  HIDDEN = 'hidden',
+  DELETED = 'deleted'
+}
+
 export interface DocumentItem {
   id: string;
   title: string;
   description: string;
   imageUrl: string;
   category: Category;
+  status: ItemStatus;
   createdAt: number;
 }
 
