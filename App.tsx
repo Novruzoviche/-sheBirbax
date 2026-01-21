@@ -1,0 +1,50 @@
+
+import React from 'react';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import HomePage from './pages/HomePage';
+import CategoryPage from './pages/CategoryPage';
+import AdminPage from './pages/AdminPage';
+import { Category } from './types';
+
+const App: React.FC = () => {
+  return (
+    <Router>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route 
+              path="/diplomlar" 
+              element={<CategoryPage category={Category.DIPLOMA} title="Diplomlar" />} 
+            />
+            <Route 
+              path="/sertifikatlar" 
+              element={<CategoryPage category={Category.CERTIFICATE} title="Sertifikatlar" />} 
+            />
+            <Route path="/admin" element={<AdminPage />} />
+          </Routes>
+        </div>
+        <footer className="bg-gray-900 text-white py-10">
+          <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-6">
+            <div>
+              <h3 className="text-2xl font-bold text-blue-400">İşə Bir Bax</h3>
+              <p className="text-gray-400 mt-2">Nailiyyətlərinizi bizimlə paylaşın.</p>
+            </div>
+            <div className="flex space-x-6 text-sm">
+              <a href="#" className="hover:text-blue-400 transition-colors">Haqqımızda</a>
+              <a href="#" className="hover:text-blue-400 transition-colors">Əlaqə</a>
+              <a href="#" className="hover:text-blue-400 transition-colors">Məxfilik Siyasəti</a>
+            </div>
+            <p className="text-gray-500 text-sm">
+              &copy; {new Date().getFullYear()} İşə Bir Bax. Bütün hüquqlar qorunur.
+            </p>
+          </div>
+        </footer>
+      </div>
+    </Router>
+  );
+};
+
+export default App;
