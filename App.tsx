@@ -3,6 +3,7 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
+import ServicesPage from './pages/ServicesPage';
 import CategoryPage from './pages/CategoryPage';
 import AdminPage from './pages/AdminPage';
 import { Category } from './types';
@@ -15,6 +16,7 @@ const App: React.FC = () => {
         <div className="flex-grow">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/xidmetlerimiz" element={<ServicesPage />} />
             <Route 
               path="/diplomlar" 
               element={<CategoryPage category={Category.DIPLOMA} title="Diplomlar" />} 

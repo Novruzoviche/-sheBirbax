@@ -20,6 +20,14 @@ export interface DocumentItem {
   createdAt: number;
 }
 
+export interface ServiceItem {
+  id: string;
+  title: string;
+  description: string;
+  highlights: string[]; // e.g. ["Laminasiya PULSUZ", "Ucuz qiymət"]
+  createdAt: number;
+}
+
 export interface User {
   username: string;
   isLoggedIn: boolean;

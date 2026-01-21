@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { storageService } from '../services/storageService';
-import { DocumentItem, Category, ItemStatus } from '../types';
+import { DocumentItem, Category, ItemStatus, ServiceItem } from '../types';
 
-type AdminTab = 'dashboard' | 'add' | 'manage' | 'hidden' | 'deleted';
+type AdminTab = 'dashboard' | 'add' | 'manage' | 'hidden' | 'deleted' | 'services';
 
 const AdminPage: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -13,25 +13,34 @@ const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   
   const [docs, setDocs] = useState<DocumentItem[]>([]);
+  const [services, setServices] = useState<ServiceItem[]>([]);
   const [editingDoc, setEditingDoc] = useState<DocumentItem | null>(null);
+  const [editingService, setEditingService] = useState<ServiceItem | null>(null);
   
-  // Form States
+  // Document Form States
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [category, setCategory] = useState<Category>(Category.DIPLOMA);
+  
+  // Service Form States
+  const [sTitle, setSTitle] = useState('');
+  const [sDescription, setSDescription] = useState('');
+  const [sHighlights, setSHighlights] = useState(''); // comma separated
+  
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
     const session = sessionStorage.getItem('admin_session');
     if (session === 'active') {
       setIsLoggedIn(true);
-      refreshDocs();
+      refreshData();
     }
   }, []);
 
-  const refreshDocs = () => {
+  const refreshData = () => {
     setDocs(storageService.getDocuments());
+    setServices(storageService.getServices());
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -39,7 +48,7 @@ const AdminPage: React.FC = () => {
     if (username === 'admin' && password === 'admin123') {
       setIsLoggedIn(true);
       sessionStorage.setItem('admin_session', 'active');
-      refreshDocs();
+      refreshData();
       setError('');
     } else {
       setError('İstifadəçi adı və ya şifrə yanlışdır!');
@@ -51,7 +60,7 @@ const AdminPage: React.FC = () => {
     sessionStorage.removeItem('admin_session');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleDocSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !imageUrl) return;
 
@@ -75,7 +84,7 @@ const AdminPage: React.FC = () => {
       setSuccess('Yeni sənəd əlavə edildi!');
     }
 
-    refreshDocs();
+    refreshData();
     setTitle('');
     setDescription('');
     setImageUrl('');
@@ -83,7 +92,37 @@ const AdminPage: React.FC = () => {
     setTimeout(() => setSuccess(''), 3000);
   };
 
-  const handleEditClick = (doc: DocumentItem) => {
+  const handleServiceSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sTitle || !sDescription) return;
+
+    const highlightsArray = sHighlights.split(',').map(h => h.trim()).filter(h => h !== '');
+
+    if (editingService) {
+      storageService.updateService(editingService.id, {
+        title: sTitle,
+        description: sDescription,
+        highlights: highlightsArray
+      });
+      setSuccess('Xidmət yeniləndi!');
+      setEditingService(null);
+    } else {
+      storageService.addService({
+        title: sTitle,
+        description: sDescription,
+        highlights: highlightsArray
+      });
+      setSuccess('Yeni xidmət əlavə edildi!');
+    }
+
+    refreshData();
+    setSTitle('');
+    setSDescription('');
+    setSHighlights('');
+    setTimeout(() => setSuccess(''), 3000);
+  };
+
+  const handleEditDoc = (doc: DocumentItem) => {
     setEditingDoc(doc);
     setTitle(doc.title);
     setDescription(doc.description);
@@ -92,15 +131,30 @@ const AdminPage: React.FC = () => {
     setActiveTab('add');
   };
 
-  const updateStatus = (id: string, status: ItemStatus) => {
-    storageService.setStatus(id, status);
-    refreshDocs();
+  const handleEditService = (service: ServiceItem) => {
+    setEditingService(service);
+    setSTitle(service.title);
+    setSDescription(service.description);
+    setSHighlights(service.highlights.join(', '));
+    setActiveTab('services');
   };
 
-  const hardDelete = (id: string) => {
-    if (window.confirm('Bu sənədi tamamilə bazadan silmək istədiyinizə əminsiniz?')) {
+  const updateDocStatus = (id: string, status: ItemStatus) => {
+    storageService.setStatus(id, status);
+    refreshData();
+  };
+
+  const hardDeleteDoc = (id: string) => {
+    if (window.confirm('Bu sənədi tamamilə silmək istəyirsiniz?')) {
       storageService.hardDeleteDocument(id);
-      refreshDocs();
+      refreshData();
+    }
+  };
+
+  const deleteService = (id: string) => {
+    if (window.confirm('Bu xidməti silmək istəyirsiniz?')) {
+      storageService.deleteService(id);
+      refreshData();
     }
   };
 
@@ -118,30 +172,26 @@ const AdminPage: React.FC = () => {
             <p className="text-gray-500 mt-2 italic">İşə Bir Bax Admin Girişi</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="İstifadəçi adı"
-                className="w-full px-5 py-4 rounded-2xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all bg-gray-50"
-                required
-              />
-            </div>
-            <div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Şifrə"
-                className="w-full px-5 py-4 rounded-2xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all bg-gray-50"
-                required
-              />
-            </div>
-            {error && <p className="text-red-500 text-sm text-center font-medium">{error}</p>}
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="İstifadəçi adı"
+              className="w-full px-5 py-4 rounded-2xl border border-gray-200 outline-none bg-gray-50"
+              required
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Şifrə"
+              className="w-full px-5 py-4 rounded-2xl border border-gray-200 outline-none bg-gray-50"
+              required
+            />
+            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 active:scale-95"
+              className="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-200 transition-all"
             >
               Daxil Ol
             </button>
@@ -151,257 +201,164 @@ const AdminPage: React.FC = () => {
     );
   }
 
-  const renderDashboard = () => {
-    const total = docs.length;
-    const visible = docs.filter(d => d.status === ItemStatus.VISIBLE).length;
-    const hidden = docs.filter(d => d.status === ItemStatus.HIDDEN).length;
-    const deleted = docs.filter(d => d.status === ItemStatus.DELETED).length;
-
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { label: 'Cəmi Sənəd', value: total, color: 'bg-blue-500' },
-          { label: 'Görünən', value: visible, color: 'bg-emerald-500' },
-          { label: 'Gizlədilmiş', value: hidden, color: 'bg-amber-500' },
-          { label: 'Silinmişlər', value: deleted, color: 'bg-rose-500' },
-        ].map((stat, i) => (
-          <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">{stat.label}</p>
-              <h4 className="text-3xl font-bold mt-1">{stat.value}</h4>
-            </div>
-            <div className={`${stat.color} w-12 h-12 rounded-2xl opacity-20`}></div>
-          </div>
-        ))}
+  const renderDashboard = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <p className="text-gray-500 text-sm font-medium">Cəmi Sənəd</p>
+        <h4 className="text-3xl font-bold mt-1">{docs.length}</h4>
       </div>
-    );
-  };
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <p className="text-gray-500 text-sm font-medium">Görünən Sənədlər</p>
+        <h4 className="text-3xl font-bold mt-1 text-emerald-600">{docs.filter(d => d.status === ItemStatus.VISIBLE).length}</h4>
+      </div>
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <p className="text-gray-500 text-sm font-medium">Xidmətlər</p>
+        <h4 className="text-3xl font-bold mt-1 text-blue-600">{services.length}</h4>
+      </div>
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <p className="text-gray-500 text-sm font-medium">Zibil Qutusu</p>
+        <h4 className="text-3xl font-bold mt-1 text-rose-600">{docs.filter(d => d.status === ItemStatus.DELETED).length}</h4>
+      </div>
+    </div>
+  );
 
-  const renderForm = () => (
+  const renderDocForm = () => (
     <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 max-w-3xl">
-      <h3 className="text-2xl font-bold text-gray-800 mb-6">
-        {editingDoc ? 'Sənədi Redaktə Et' : 'Yeni Sənəd Əlavə Et'}
-      </h3>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <h3 className="text-2xl font-bold text-gray-800 mb-6">{editingDoc ? 'Sənədi Redaktə Et' : 'Yeni Sənəd Əlavə Et'}</h3>
+      <form onSubmit={handleDocSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex-1">
-            <label className="block text-sm font-bold text-gray-700 mb-2">Başlıq</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Məs: Magistr Diplomu"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-4 focus:ring-blue-100 outline-none"
-              required
-            />
-          </div>
-          <div className="w-full">
-            <label className="block text-sm font-bold text-gray-700 mb-2">Kateqoriya</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value as Category)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-4 focus:ring-blue-100 outline-none appearance-none bg-white"
-            >
-              <option value={Category.DIPLOMA}>Diploma</option>
-              <option value={Category.CERTIFICATE}>Sertifikat</option>
-            </select>
-          </div>
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Başlıq" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" required />
+          <select value={category} onChange={(e) => setCategory(e.target.value as Category)} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none">
+            <option value={Category.DIPLOMA}>Diploma</option>
+            <option value={Category.CERTIFICATE}>Sertifikat</option>
+          </select>
         </div>
-
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Şəkil URL</label>
-          <input
-            type="url"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="https://example.com/image.jpg"
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-4 focus:ring-blue-100 outline-none"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Təsvir (Məlumat)</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Sənəd haqqında qısa məlumat..."
-            rows={4}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-4 focus:ring-blue-100 outline-none"
-          ></textarea>
-        </div>
-
-        {success && <div className="p-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100">{success}</div>}
-
+        <input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="Şəkil URL" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" required />
+        <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Təsvir..." rows={4} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none"></textarea>
+        {success && <div className="text-emerald-600 font-bold">{success}</div>}
         <div className="flex gap-4">
-          <button
-            type="submit"
-            className="bg-blue-600 text-white font-bold py-4 px-10 rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
-          >
-            {editingDoc ? 'Yenilə' : 'Əlavə Et'}
-          </button>
-          {editingDoc && (
-            <button
-              type="button"
-              onClick={() => { setEditingDoc(null); setActiveTab('manage'); setTitle(''); setDescription(''); setImageUrl(''); }}
-              className="bg-gray-100 text-gray-600 font-bold py-4 px-10 rounded-2xl hover:bg-gray-200"
-            >
-              Ləğv Et
-            </button>
-          )}
+          <button type="submit" className="bg-blue-600 text-white font-bold py-4 px-10 rounded-2xl hover:bg-blue-700 transition-all">{editingDoc ? 'Yenilə' : 'Əlavə Et'}</button>
+          {editingDoc && <button type="button" onClick={() => { setEditingDoc(null); setActiveTab('manage'); }} className="bg-gray-100 px-10 rounded-2xl font-bold">Ləğv Et</button>}
         </div>
       </form>
     </div>
   );
 
-  const renderTable = (filterStatus: ItemStatus | 'all') => {
-    const filtered = filterStatus === 'all' 
-      ? docs.filter(d => d.status === ItemStatus.VISIBLE) 
-      : docs.filter(d => d.status === filterStatus);
+  const renderServiceManager = () => (
+    <div className="space-y-8">
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 max-w-3xl">
+        <h3 className="text-2xl font-bold text-gray-800 mb-6">{editingService ? 'Xidməti Redaktə Et' : 'Yeni Xidmət Əlavə Et'}</h3>
+        <form onSubmit={handleServiceSubmit} className="space-y-6">
+          <input type="text" value={sTitle} onChange={(e) => setSTitle(e.target.value)} placeholder="Xidmət Adı" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" required />
+          <textarea value={sDescription} onChange={(e) => setSDescription(e.target.value)} placeholder="Xidmət Təsviri..." rows={3} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" required></textarea>
+          <input type="text" value={sHighlights} onChange={(e) => setSHighlights(e.target.value)} placeholder="Özəlliklər (vergüllə ayırın: Laminasiya PULSUZ, Ucuz, ...)" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" />
+          <button type="submit" className="bg-blue-600 text-white font-bold py-4 px-10 rounded-2xl hover:bg-blue-700 transition-all">
+            {editingService ? 'Yenilə' : 'Xidmət Əlavə Et'}
+          </button>
+          {editingService && <button type="button" onClick={() => { setEditingService(null); setSTitle(''); setSDescription(''); setSHighlights(''); }} className="ml-4 bg-gray-100 px-10 py-4 rounded-2xl font-bold">Ləğv Et</button>}
+        </form>
+      </div>
 
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-100">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Xidmət</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Özəlliklər</th>
+              <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase">Əməliyyat</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {services.map(s => (
+              <tr key={s.id}>
+                <td className="px-6 py-4 font-bold">{s.title}</td>
+                <td className="px-6 py-4 text-sm text-gray-500">{s.highlights.join(', ')}</td>
+                <td className="px-6 py-4 text-right space-x-2">
+                  <button onClick={() => handleEditService(s)} className="text-blue-600 font-bold hover:underline">Redaktə</button>
+                  <button onClick={() => deleteService(s.id)} className="text-red-600 font-bold hover:underline">Sil</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  const renderDocTable = (status: ItemStatus | 'visible') => {
+    const filtered = docs.filter(d => status === 'visible' ? d.status === ItemStatus.VISIBLE : d.status === status);
     return (
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-100">
-            <thead className="bg-gray-50/50">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Ön Baxış</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Məlumat</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Kateqoriya</th>
-                <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Əməliyyatlar</th>
+        <table className="min-w-full divide-y divide-gray-100">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Ön Baxış</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Başlıq</th>
+              <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase">Əməliyyat</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {filtered.map(d => (
+              <tr key={d.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4"><img src={d.imageUrl} className="h-12 w-16 object-cover rounded-lg" /></td>
+                <td className="px-6 py-4 font-bold">{d.title}</td>
+                <td className="px-6 py-4 text-right space-x-2">
+                   <button onClick={() => handleEditDoc(d)} className="text-blue-600 font-bold">Edit</button>
+                   <button onClick={() => updateDocStatus(d.id, d.status === ItemStatus.VISIBLE ? ItemStatus.HIDDEN : ItemStatus.VISIBLE)} className="text-amber-600 font-bold">
+                     {d.status === ItemStatus.VISIBLE ? 'Gizlət' : 'Göstər'}
+                   </button>
+                   <button onClick={() => updateDocStatus(d.id, ItemStatus.DELETED)} className="text-rose-600 font-bold">Sil</button>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filtered.map((doc) => (
-                <tr key={doc.id} className="hover:bg-blue-50/30 transition-colors group">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <img src={doc.imageUrl} className="h-16 w-20 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform" />
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-bold text-gray-900">{doc.title}</div>
-                    <div className="text-xs text-gray-500 mt-1 line-clamp-1">{doc.description}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wide rounded-full ${
-                      doc.category === Category.DIPLOMA ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
-                    }`}>
-                      {doc.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end gap-2">
-                      {doc.status !== ItemStatus.DELETED && (
-                        <>
-                          <button onClick={() => handleEditClick(doc)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors" title="Redaktə et">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                          </button>
-                          {doc.status === ItemStatus.VISIBLE ? (
-                            <button onClick={() => updateStatus(doc.id, ItemStatus.HIDDEN)} className="p-2 text-amber-600 hover:bg-amber-100 rounded-lg transition-colors" title="Gizlət">
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
-                            </button>
-                          ) : (
-                            <button onClick={() => updateStatus(doc.id, ItemStatus.VISIBLE)} className="p-2 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors" title="Göstər">
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                            </button>
-                          )}
-                          <button onClick={() => updateStatus(doc.id, ItemStatus.DELETED)} className="p-2 text-rose-600 hover:bg-rose-100 rounded-lg transition-colors" title="Zibil qutusuna at">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                          </button>
-                        </>
-                      )}
-                      {doc.status === ItemStatus.DELETED && (
-                        <>
-                          <button onClick={() => updateStatus(doc.id, ItemStatus.VISIBLE)} className="p-2 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors" title="Bərpa et">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                          </button>
-                          <button onClick={() => hardDelete(doc.id)} className="p-2 text-red-700 hover:bg-red-100 rounded-lg transition-colors" title="Tamamilə sil">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12"/></svg>
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-6 py-20 text-center text-gray-400 italic">Məlumat tapılmadı.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row pt-16">
-      {/* AdminLTE style Sidebar */}
       <aside className="w-full md:w-72 bg-slate-900 text-white flex flex-col border-r border-slate-800">
         <div className="p-8 border-b border-slate-800">
-          <h2 className="text-xl font-black text-blue-400 flex items-center gap-2">
-            <span className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
-            İBİB ADMIN
-          </h2>
+          <h2 className="text-xl font-black text-blue-400">İBİB ADMIN</h2>
         </div>
-        
-        <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
+        <nav className="flex-1 p-6 space-y-2">
           {[
-            { id: 'dashboard', label: 'Dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
-            { id: 'add', label: 'Yeni Əlavə Et', icon: 'M12 4v16m8-8H4' },
-            { id: 'manage', label: 'Məzmun İdarəetməsi', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
-            { id: 'hidden', label: 'Gizlədilmişlər', icon: 'M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18' },
-            { id: 'deleted', label: 'Zibil Qutusu', icon: 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' },
-          ].map((item) => (
+            { id: 'dashboard', label: 'Dashboard', icon: '🏠' },
+            { id: 'services', label: 'Xidmətlər', icon: '🛠️' },
+            { id: 'add', label: 'Sənəd Əlavə Et', icon: '➕' },
+            { id: 'manage', label: 'Sənədləri İdarə Et', icon: '📄' },
+            { id: 'hidden', label: 'Gizlədilmişlər', icon: '👁️‍🗨️' },
+            { id: 'deleted', label: 'Zibil Qutusu', icon: '🗑️' },
+          ].map(item => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id as AdminTab)}
               className={`w-full flex items-center space-x-4 p-4 rounded-2xl transition-all ${
-                activeTab === item.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                activeTab === item.id ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} /></svg>
+              <span className="text-lg">{item.icon}</span>
               <span className="font-semibold text-sm">{item.label}</span>
             </button>
           ))}
         </nav>
-        
-        <div className="p-6 border-t border-slate-800">
-          <button 
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center space-x-2 p-4 bg-slate-800 text-rose-400 hover:bg-rose-900 hover:text-white rounded-2xl transition-all font-bold"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-            <span>Çıxış</span>
-          </button>
+        <div className="p-6">
+          <button onClick={handleLogout} className="w-full p-4 bg-slate-800 text-rose-400 rounded-2xl font-bold">Çıxış</button>
         </div>
       </aside>
 
-      {/* Content Area */}
-      <main className="flex-1 overflow-y-auto">
-        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-slate-800 capitalize">{activeTab}</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-slate-900">Admin Panel</p>
-              <p className="text-xs text-slate-400">admin@isebirbax.az</p>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold border-2 border-white shadow-sm">
-              A
-            </div>
-          </div>
+      <main className="flex-1 p-8 overflow-y-auto">
+        <header className="mb-8 flex justify-between items-center">
+          <h1 className="text-2xl font-black text-slate-800 capitalize">{activeTab}</h1>
         </header>
-
-        <div className="p-8">
-          {activeTab === 'dashboard' && renderDashboard()}
-          {activeTab === 'add' && renderForm()}
-          {activeTab === 'manage' && renderTable(ItemStatus.VISIBLE)}
-          {activeTab === 'hidden' && renderTable(ItemStatus.HIDDEN)}
-          {activeTab === 'deleted' && renderTable(ItemStatus.DELETED)}
-        </div>
+        {activeTab === 'dashboard' && renderDashboard()}
+        {activeTab === 'services' && renderServiceManager()}
+        {activeTab === 'add' && renderDocForm()}
+        {activeTab === 'manage' && renderDocTable('visible')}
+        {activeTab === 'hidden' && renderDocTable(ItemStatus.HIDDEN)}
+        {activeTab === 'deleted' && renderDocTable(ItemStatus.DELETED)}
       </main>
     </div>
   );
