@@ -7,6 +7,7 @@ const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
+  // Admin Panel link is removed from this array to hide it from the Navbar
   const navLinks = [
     { name: 'Ana Səhifə', path: '/' },
     { name: 'Xidmətlərimiz', path: '/xidmetlerimiz' },
@@ -45,7 +46,7 @@ const Navbar: React.FC = () => {
               ))}
             </div>
 
-            {/* Radio Player - Always visible on desktop and mobile */}
+            {/* Radio Player - Always visible */}
             <RadioPlayer />
 
             {/* Mobile Menu Button */}
