@@ -65,6 +65,13 @@ const Navbar: React.FC = () => {
               </svg>
             </a>
 
+            {/* Telegram Icon */}
+            <a href="https://web.telegram.org/k/#@ishebirbaxchannel" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-blue-500 transition-colors">
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+              </svg>
+            </a>
+
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center">
               <button
