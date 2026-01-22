@@ -4,6 +4,7 @@ import { DocumentItem, Category, ItemStatus, ServiceItem, ContactMessage, Messag
 const DOCS_STORAGE_KEY = 'ise_bir_bax_docs_v2';
 const SERVICES_STORAGE_KEY = 'ise_bir_bax_services_v1';
 const MESSAGES_STORAGE_KEY = 'ise_bir_bax_messages_v1';
+const ADMIN_CREDS_KEY = 'ise_bir_bax_admin_creds_v1';
 
 const initialDocs: DocumentItem[] = [
   {
@@ -44,6 +45,16 @@ const initialServices: ServiceItem[] = [
 ];
 
 export const storageService = {
+  // Admin Credentials
+  getAdminCreds: () => {
+    const data = localStorage.getItem(ADMIN_CREDS_KEY);
+    return data ? JSON.parse(data) : { username: 'admin', password: 'admin123' };
+  },
+
+  updateAdminCreds: (creds: { username: string; password: string }) => {
+    localStorage.setItem(ADMIN_CREDS_KEY, JSON.stringify(creds));
+  },
+
   // Document Management
   getDocuments: (): DocumentItem[] => {
     const data = localStorage.getItem(DOCS_STORAGE_KEY);
