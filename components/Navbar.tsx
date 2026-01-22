@@ -58,6 +58,13 @@ const Navbar: React.FC = () => {
               </svg>
             </a>
 
+            {/* TikTok Icon */}
+            <a href="https://www.tiktok.com/@ishebirbax" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-blue-500 transition-colors">
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
+              </svg>
+            </a>
+
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center">
               <button
