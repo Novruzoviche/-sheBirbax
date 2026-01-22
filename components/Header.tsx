@@ -6,7 +6,7 @@ const Header: React.FC = () => {
     <header className="relative bg-gradient-to-r from-blue-700 to-blue-500 text-white pt-32 pb-20 px-4">
       <div className="max-w-4xl mx-auto text-center">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 animate-fade-in">
-          Diplom və sertifikatların peşəkar çapı
+          Diplom və Sertifikatların Peşəkar Çapı
         </h1>
         <p className="text-lg md:text-xl opacity-90 font-light mb-8">
           Yüksək keyfiyyətli materiallar, rəsmi dizayn və sürətli icra

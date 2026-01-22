@@ -34,7 +34,7 @@ const App: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-6">
             <div>
               <h3 className="text-2xl font-bold text-blue-400">İşə Bir Bax</h3>
-              <p className="text-gray-400 mt-2">Nailiyyətlərinizi bizimlə paylaşın.</p>
+              <p className="text-gray-400 mt-2">Diplom və Sertifikat Çapı | Peşəkar Çap Xidmətləri</p>
             </div>
             <div className="flex space-x-6 text-sm">
               <a href="#" className="hover:text-blue-400 transition-colors">Haqqımızda</a>
