@@ -14,9 +14,9 @@ const HomePage: React.FC = () => {
     "https://i.imgur.com/BJBeqe1.png",
     "https://i.imgur.com/LJiWqLZ.png",
     "https://i.imgur.com/SwvjkRv.png",
-    "https://i.imgur.com/LJiWqLZ.png",
+    "https://i.imgur.com/BJBeqe1.png",
     "https://i.imgur.com/SwvjkRv.png",
-    "https://i.imgur.com/LJiWqLZ.png",
+    "https://i.imgur.com/BJBeqe1.png",
     "https://i.imgur.com/SwvjkRv.png",
   ];
 
