@@ -50,7 +50,7 @@ const Navbar: React.FC = () => {
             <RadioPlayer />
 
             {/* Instagram Icon */}
-            <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-blue-500 transition-colors">
+            <a href="https://www.instagram.com/ishebirbax" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-blue-500 transition-colors">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                 <path d="m16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
