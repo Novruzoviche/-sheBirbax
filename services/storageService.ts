@@ -1,8 +1,9 @@
 
-import { DocumentItem, Category, ItemStatus, ServiceItem } from '../types';
+import { DocumentItem, Category, ItemStatus, ServiceItem, ContactMessage, MessageStatus } from '../types';
 
 const DOCS_STORAGE_KEY = 'ise_bir_bax_docs_v2';
 const SERVICES_STORAGE_KEY = 'ise_bir_bax_services_v1';
+const MESSAGES_STORAGE_KEY = 'ise_bir_bax_messages_v1';
 
 const initialDocs: DocumentItem[] = [
   {
@@ -30,7 +31,7 @@ const initialServices: ServiceItem[] = [
     id: 's1',
     title: 'Diplom Çapı',
     description: 'Yüksək keyfiyyətli kağızlarda diplomların peşəkar çapı.',
-    highlights: ['Laminasiya PULSUZ', 'Yüksək Keyfiyyət'],
+    highlights: ['Laminasiya PULSUZ', 'Yüksək Keyfiyy'],
     createdAt: Date.now()
   },
   {
@@ -118,5 +119,34 @@ export const storageService = {
     const services = storageService.getServices();
     const updated = services.filter(s => s.id !== id);
     localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(updated));
+  },
+
+  // Message Management
+  getMessages: (): ContactMessage[] => {
+    const data = localStorage.getItem(MESSAGES_STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+  },
+
+  addMessage: (msg: Omit<ContactMessage, 'id' | 'createdAt' | 'status'>): void => {
+    const messages = storageService.getMessages();
+    const newMessage: ContactMessage = {
+      ...msg,
+      id: Math.random().toString(36).substr(2, 9),
+      status: MessageStatus.UNREAD,
+      createdAt: Date.now()
+    };
+    localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify([newMessage, ...messages]));
+  },
+
+  updateMessageStatus: (id: string, status: MessageStatus): void => {
+    const messages = storageService.getMessages();
+    const updated = messages.map(m => m.id === id ? { ...m, status } : m);
+    localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(updated));
+  },
+
+  deleteMessage: (id: string): void => {
+    const messages = storageService.getMessages();
+    const updated = messages.filter(m => m.id !== id);
+    localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(updated));
   }
 };

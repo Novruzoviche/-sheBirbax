@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import RadioPlayer from './RadioPlayer';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,7 +12,7 @@ const Navbar: React.FC = () => {
     { name: 'Xidmətlərimiz', path: '/xidmetlerimiz' },
     { name: 'Diplomlar', path: '/diplomlar' },
     { name: 'Sertifikatlar', path: '/sertifikatlar' },
-    { name: 'Admin Panel', path: '/admin' },
+    { name: 'Əlaqə', path: '/elaqe' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -26,37 +27,42 @@ const Navbar: React.FC = () => {
             </Link>
           </div>
           
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`text-sm font-medium transition-colors ${
-                  isActive(link.path) 
-                    ? 'text-blue-600 border-b-2 border-blue-600 py-5' 
-                    : 'text-gray-600 hover:text-blue-500'
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
+          <div className="flex items-center space-x-3 sm:space-x-6">
+            {/* Desktop Links */}
+            <div className="hidden md:flex items-center space-x-8">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`text-sm font-medium transition-colors ${
+                    isActive(link.path) 
+                      ? 'text-blue-600 border-b-2 border-blue-600 py-5' 
+                      : 'text-gray-600 hover:text-blue-500'
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-500 hover:text-blue-600 focus:outline-none"
-            >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {isOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
+            {/* Radio Player - Always visible on desktop and mobile */}
+            <RadioPlayer />
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="text-gray-500 hover:text-blue-600 focus:outline-none p-1"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  {isOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>

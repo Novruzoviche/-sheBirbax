@@ -10,6 +10,12 @@ export enum ItemStatus {
   DELETED = 'deleted'
 }
 
+export enum MessageStatus {
+  UNREAD = 'unread',
+  READ = 'read',
+  REPLIED = 'replied'
+}
+
 export interface DocumentItem {
   id: string;
   title: string;
@@ -25,6 +31,16 @@ export interface ServiceItem {
   title: string;
   description: string;
   highlights: string[]; // e.g. ["Laminasiya PULSUZ", "Ucuz qiymət"]
+  createdAt: number;
+}
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: MessageStatus;
   createdAt: number;
 }
 

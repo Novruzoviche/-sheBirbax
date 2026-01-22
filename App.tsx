@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import ServicesPage from './pages/ServicesPage';
 import CategoryPage from './pages/CategoryPage';
+import ContactPage from './pages/ContactPage';
 import AdminPage from './pages/AdminPage';
 import { Category } from './types';
 
@@ -17,6 +18,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/xidmetlerimiz" element={<ServicesPage />} />
+            <Route path="/elaqe" element={<ContactPage />} />
             <Route 
               path="/diplomlar" 
               element={<CategoryPage category={Category.DIPLOMA} title="Diplomlar" />} 
@@ -32,11 +34,11 @@ const App: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-6">
             <div>
               <h3 className="text-2xl font-bold text-blue-400">İşə Bir Bax</h3>
-              <p className="text-gray-400 mt-2">Diplom və Sertifikat Çapı | Peşəkar Çap Xidmətləri</p>
+              <p className="text-gray-400 mt-2">Nailiyyətlərinizi bizimlə paylaşın.</p>
             </div>
             <div className="flex space-x-6 text-sm">
               <a href="#" className="hover:text-blue-400 transition-colors">Haqqımızda</a>
-              <a href="#" className="hover:text-blue-400 transition-colors">Əlaqə</a>
+              <a href="/#/elaqe" className="hover:text-blue-400 transition-colors">Əlaqə</a>
               <a href="#" className="hover:text-blue-400 transition-colors">Məxfilik Siyasəti</a>
             </div>
             <p className="text-gray-500 text-sm">
