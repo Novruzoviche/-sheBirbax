@@ -1,10 +1,19 @@
 
 import { DocumentItem, Category, ItemStatus, ServiceItem, ContactMessage, MessageStatus } from '../types';
 
-const DOCS_STORAGE_KEY = 'ise_bir_bax_docs_v2';
-const SERVICES_STORAGE_KEY = 'ise_bir_bax_services_v1';
-const MESSAGES_STORAGE_KEY = 'ise_bir_bax_messages_v1';
-const ADMIN_CREDS_KEY = 'ise_bir_bax_admin_creds_v1';
+// Stable keys to prevent data loss during code updates
+const DOCS_STORAGE_KEY = 'ise_bir_bax_documents_stable';
+const SERVICES_STORAGE_KEY = 'ise_bir_bax_services_stable';
+const MESSAGES_STORAGE_KEY = 'ise_bir_bax_messages_stable';
+const ADMIN_CREDS_KEY = 'ise_bir_bax_admin_creds_stable';
+
+// Legacy keys for migration
+const LEGACY_KEYS = {
+  docs: ['ise_bir_bax_docs_v2', 'ise_bir_bax_docs_v1'],
+  services: ['ise_bir_bax_services_v1'],
+  messages: ['ise_bir_bax_messages_v1'],
+  creds: ['ise_bir_bax_admin_creds_v1']
+};
 
 const initialDocs: DocumentItem[] = [
   {
@@ -32,7 +41,7 @@ const initialServices: ServiceItem[] = [
     id: 's1',
     title: 'Diplom Çapı',
     description: 'Yüksək keyfiyyətli kağızlarda diplomların peşəkar çapı.',
-    highlights: ['Laminasiya PULSUZ', 'Yüksək Keyfiyy'],
+    highlights: ['Laminasiya PULSUZ', 'Yüksək Keyfiyyət'],
     createdAt: Date.now()
   },
   {
@@ -44,11 +53,41 @@ const initialServices: ServiceItem[] = [
   }
 ];
 
+/**
+ * Migrates data from older versioned keys to the stable key if the stable key is empty.
+ */
+const migrateData = () => {
+  const migrate = (stableKey: string, legacyKeys: string[]) => {
+    if (!localStorage.getItem(stableKey)) {
+      for (const legacyKey of legacyKeys) {
+        const oldData = localStorage.getItem(legacyKey);
+        if (oldData) {
+          localStorage.setItem(stableKey, oldData);
+          console.log(`Migrated data from ${legacyKey} to ${stableKey}`);
+          break; // Stop after first successful migration
+        }
+      }
+    }
+  };
+
+  migrate(DOCS_STORAGE_KEY, LEGACY_KEYS.docs);
+  migrate(SERVICES_STORAGE_KEY, LEGACY_KEYS.services);
+  migrate(MESSAGES_STORAGE_KEY, LEGACY_KEYS.messages);
+  migrate(ADMIN_CREDS_KEY, LEGACY_KEYS.creds);
+};
+
+// Run migration immediately
+migrateData();
+
 export const storageService = {
   // Admin Credentials
   getAdminCreds: () => {
-    const data = localStorage.getItem(ADMIN_CREDS_KEY);
-    return data ? JSON.parse(data) : { username: 'admin', password: 'admin123' };
+    try {
+      const data = localStorage.getItem(ADMIN_CREDS_KEY);
+      return data ? JSON.parse(data) : { username: 'admin', password: 'admin123' };
+    } catch (e) {
+      return { username: 'admin', password: 'admin123' };
+    }
   },
 
   updateAdminCreds: (creds: { username: string; password: string }) => {
@@ -57,12 +96,16 @@ export const storageService = {
 
   // Document Management
   getDocuments: (): DocumentItem[] => {
-    const data = localStorage.getItem(DOCS_STORAGE_KEY);
-    if (!data) {
-      localStorage.setItem(DOCS_STORAGE_KEY, JSON.stringify(initialDocs));
+    try {
+      const data = localStorage.getItem(DOCS_STORAGE_KEY);
+      if (!data) {
+        localStorage.setItem(DOCS_STORAGE_KEY, JSON.stringify(initialDocs));
+        return initialDocs;
+      }
+      return JSON.parse(data);
+    } catch (e) {
       return initialDocs;
     }
-    return JSON.parse(data);
   },
 
   getVisibleDocuments: (): DocumentItem[] => {
@@ -100,12 +143,16 @@ export const storageService = {
 
   // Service Management
   getServices: (): ServiceItem[] => {
-    const data = localStorage.getItem(SERVICES_STORAGE_KEY);
-    if (!data) {
-      localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(initialServices));
+    try {
+      const data = localStorage.getItem(SERVICES_STORAGE_KEY);
+      if (!data) {
+        localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(initialServices));
+        return initialServices;
+      }
+      return JSON.parse(data);
+    } catch (e) {
       return initialServices;
     }
-    return JSON.parse(data);
   },
 
   addService: (service: Omit<ServiceItem, 'id' | 'createdAt'>): ServiceItem => {
@@ -134,8 +181,12 @@ export const storageService = {
 
   // Message Management
   getMessages: (): ContactMessage[] => {
-    const data = localStorage.getItem(MESSAGES_STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    try {
+      const data = localStorage.getItem(MESSAGES_STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
   },
 
   addMessage: (msg: Omit<ContactMessage, 'id' | 'createdAt' | 'status'>): void => {

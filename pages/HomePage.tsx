@@ -8,18 +8,6 @@ import { DocumentItem } from '../types';
 const HomePage: React.FC = () => {
   const [docs, setDocs] = useState<DocumentItem[]>([]);
 
-  const logos = [
-    "https://i.imgur.com/LJiWqLZ.png",
-    "https://i.imgur.com/SwvjkRv.png",
-    "https://i.imgur.com/BJBeqe1.png",
-    "https://i.imgur.com/LJiWqLZ.png",
-    "https://i.imgur.com/SwvjkRv.png",
-    "https://i.imgur.com/BJBeqe1.png",
-    "https://i.imgur.com/SwvjkRv.png",
-    "https://i.imgur.com/BJBeqe1.png",
-    "https://i.imgur.com/SwvjkRv.png",
-  ];
-
   useEffect(() => {
     setDocs(storageService.getVisibleDocuments());
   }, []);
@@ -27,29 +15,6 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <Header />
-      <section className="bg-transparent border-t border-b border-gray-200 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">Gücümüzü Sizdən Alırıq</h2>
-          <div className="overflow-hidden relative">
-            <div className="flex whitespace-nowrap" style={{
-              animation: 'scroll 20s linear infinite'
-            }}>
-              {logos.map((logo, index) => (
-                <img key={index} src={logo} alt={`Client Logo ${index + 1}`} className="h-[3cm] w-auto mx-4 flex-shrink-0" />
-              ))}
-              {logos.map((logo, index) => (
-                <img key={`dup-${index}`} src={logo} alt={`Client Logo ${index + 1}`} className="h-[3cm] w-auto mx-4 flex-shrink-0" />
-              ))}
-            </div>
-          </div>
-        </div>
-        <style>{`
-          @keyframes scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-        `}</style>
-      </section>
       <main id="explore" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
         <div className="flex flex-col mb-10">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Bütün Nailiyyətlər</h2>
